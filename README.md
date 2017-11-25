@@ -1,4 +1,8 @@
-# Wiki Skill
+# Auto translatable Wiki Skill
+
+wiki skill works with english utterances, this allows the wikipedia skill to
+translate all input in english, search wikipedia, and translate output into
+configured language
 
 ## Usage:
 * `wiki Elon Musk`

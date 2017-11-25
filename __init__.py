@@ -26,13 +26,16 @@ from os.path import join, dirname
 from mycroft.skills.core import MycroftSkill
 from mycroft.util import read_stripped_lines
 from mycroft.util.log import getLogger
+import sys
+sys.path.append(dirname(__file__))
+from auto_translatable import AutotranslatableSkill
 
 __author__ = 'jdorleans'
 
 LOGGER = getLogger(__name__)
 
 
-class WikipediaSkill(MycroftSkill):
+class WikipediaSkill(AutotranslatableSkill):
     def __init__(self):
         super(WikipediaSkill, self).__init__(name="WikipediaSkill")
         self.max_results = self.config['max_results']
@@ -53,6 +56,16 @@ class WikipediaSkill(MycroftSkill):
     def handle_intent(self, message):
         try:
             title = message.data.get("ArticleTitle")
+            # auto_translate to english
+            utterance_lang = self.language_detect(title)
+            if "-" in utterance_lang:
+                utterance_lang = utterance_lang.split("-")[0]
+            target_lang = self.lang
+            if "-" in target_lang:
+                target_lang = target_lang.split("-")[0]
+            if utterance_lang != target_lang:
+                title = self.translate(title, target_lang)
+
             self.__feedback_search(title)
             results = wiki.search(title, self.max_results)
             summary = re.sub(
