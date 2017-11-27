@@ -21,14 +21,16 @@ from random import randrange
 import re
 import wikipedia as wiki
 from adapt.intent import IntentBuilder
-from os.path import join, dirname
-
-from mycroft.skills.core import MycroftSkill
+from os.path import join
 from mycroft.util import read_stripped_lines
 from mycroft.util.log import getLogger
-import sys
-sys.path.append(dirname(__file__))
-from auto_translatable import AutotranslatableSkill
+try:
+    from mycroft.skills.auto_translatable import AutotranslatableFallback
+except ImportError:
+    from os.path import dirname
+    import sys
+    sys.path.append(dirname(__file__))
+    from auto_translatable import AutotranslatableSkill
 
 __author__ = 'jdorleans'
 

@@ -120,7 +120,7 @@ class AutotranslatableFallback(FallbackSkill):
                     if self.input_lang != ut_lang:
                         message.data["utterance"] = self.translate(ut,
                                                               self.input_lang)
-                handler(message)
+                return handler(message)
 
             self.instance_fallback_handlers.append(new_handler)
             self._register_fallback(new_handler, priority)
