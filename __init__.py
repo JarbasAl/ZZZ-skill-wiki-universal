@@ -25,7 +25,7 @@ from os.path import join
 from mycroft.util import read_stripped_lines
 from mycroft.util.log import getLogger
 try:
-    from mycroft.skills.auto_translatable import AutotranslatableFallback
+    from mycroft.skills.auto_translatable import AutotranslatableSkill
 except ImportError:
     from os.path import dirname
     import sys
