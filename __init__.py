@@ -17,7 +17,7 @@
 
 
 from random import randrange
-
+from os.path import dirname
 import re
 import wikipedia as wiki
 from adapt.intent import IntentBuilder
@@ -27,12 +27,10 @@ from mycroft.util.log import getLogger
 try:
     from mycroft.skills.auto_translatable import AutotranslatableSkill
 except ImportError:
-    from os.path import dirname
     import sys
     sys.path.append(dirname(__file__))
     from auto_translatable import AutotranslatableSkill
 
-__author__ = 'jdorleans'
 
 LOGGER = getLogger(__name__)
 
