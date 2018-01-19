@@ -107,6 +107,7 @@ class AutotranslatableFallback(FallbackSkill):
                """
         # translate utterance for skills that generate speech at
         # runtime, or by request
+        message_context = message_context or {}
         utterance_lang = self.language_detect(utterance)
         if "-" in utterance_lang:
             utterance_lang = utterance_lang.split("-")[0]
@@ -158,7 +159,7 @@ class AutotranslatableFallback(FallbackSkill):
                 return success
 
             self.instance_fallback_handlers.append(universal_translate_handler)
-            self._register_fallback(universal_translate_handler, priority
+            self._register_fallback(universal_translate_handler, priority)
         else:
             self.instance_fallback_handlers.append(handler)
             self._register_fallback(handler, priority)
