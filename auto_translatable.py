@@ -11,28 +11,38 @@ class AutotranslatableSkill(MycroftSkill):
         MycroftSkill.__init__(self, name, emitter)
 
     def language_detect(self, utterance):
+        utterance = unicodedata.normalize('NFKD', unicode(utterance)).encode('ascii',
+                                                                    'ignore')
         return language_detect(utterance)
 
     def translate(self, text, lang=None):
         lang = lang or self.lang
         sentence = translate(text, lang)
-        translated = unicodedata.normalize('NFKD', sentence).encode('ascii',
+        translated = unicodedata.normalize('NFKD', unicode(
+            sentence)).encode('ascii',
                                                                     'ignore')
         return translated
 
-    def speak(self, utterance, expect_response=False):
+    def speak(self, utterance, expect_response=False,
+              mute=False, more_speech=False, metadata=None,
+              message_context=None):
         """
-           Speak a sentence. Detect Language and auto_translate if needed
+            Speak a sentence.
 
-           Args:
-               utterance:          sentence mycroft should speak
-               expect_response:    set to True if Mycroft should expect a
-                                   response from the user and start listening
-                                   for response.
-        """
+                   Args:
+                       utterance:          sentence mycroft should speak
+                       expect_response:    set to True if Mycroft should expect
+                                           a response from the user and start
+                                           listening for response.
+                       mute:               ask to not execute TTS
+                       more_speech:        signal more speak messages coming
+                       metadata:           Extra data to be transmitted
+                                           together with speech
+                       message_context:    message.context field
+               """
         # translate utterance for skills that generate speech at
         # runtime, or by request
-        message_context = {}
+        message_context = message_context or {}
         utterance_lang = self.language_detect(utterance)
         if "-" in utterance_lang:
             utterance_lang = utterance_lang.split("-")[0]
@@ -48,8 +58,15 @@ class AutotranslatableSkill(MycroftSkill):
         # registers the skill as being active
         self.enclosure.register(self.name)
         data = {'utterance': utterance,
-                'expect_response': expect_response}
-        self.emitter.emit(Message("speak", data, message_context))
+                'expect_response': expect_response,
+                "mute": mute,
+                "more_speech": more_speech,
+                "metadata": metadata}
+        message = dig_for_message()
+        if message:
+            self.emitter.emit(message.reply("speak", data, message_context))
+        else:
+            self.emitter.emit(Message("speak", data, message_context))
 
 
 class AutotranslatableFallback(FallbackSkill):
@@ -60,6 +77,8 @@ class AutotranslatableFallback(FallbackSkill):
         self.input_lang = None
 
     def language_detect(self, utterance):
+        utterance = unicodedata.normalize('NFKD', utterance).encode('ascii',
+                                                                    'ignore')
         return language_detect(utterance)
 
     def translate(self, text, lang=None):
@@ -69,20 +88,26 @@ class AutotranslatableFallback(FallbackSkill):
                                                                     'ignore')
         return translated
 
-    def speak(self, utterance, expect_response=False):
+    def speak(self, utterance, expect_response=False,
+              mute=False, more_speech=False, metadata=None,
+              message_context=None):
         """
-           Speak a sentence. Detect Language and auto_translate if needed
+            Speak a sentence.
 
-           Args:
-               utterance:          sentence mycroft should speak
-               expect_response:    set to True if Mycroft should expect a
-                                   response from the user and start listening
-                                   for response.
-        """
+                   Args:
+                       utterance:          sentence mycroft should speak
+                       expect_response:    set to True if Mycroft should expect
+                                           a response from the user and start
+                                           listening for response.
+                       mute:               ask to not execute TTS
+                       more_speech:        signal more speak messages coming
+                       metadata:           Extra data to be transmitted
+                                           together with speech
+                       message_context:    message.context field
+               """
         # translate utterance for skills that generate speech at
         # runtime, or by request
-        message_context = {}
-        utterance_lang = language_detect(utterance)
+        utterance_lang = self.language_detect(utterance)
         if "-" in utterance_lang:
             utterance_lang = utterance_lang.split("-")[0]
         target_lang = self.lang
@@ -97,8 +122,15 @@ class AutotranslatableFallback(FallbackSkill):
         # registers the skill as being active
         self.enclosure.register(self.name)
         data = {'utterance': utterance,
-                'expect_response': expect_response}
-        self.emitter.emit(Message("speak", data, message_context))
+                'expect_response': expect_response,
+                "mute": mute,
+                "more_speech": more_speech,
+                "metadata": metadata}
+        message = dig_for_message()
+        if message:
+            self.emitter.emit(message.reply("speak", data, message_context))
+        else:
+            self.emitter.emit(Message("speak", data, message_context))
 
     def register_fallback(self, handler, priority):
         """
@@ -108,7 +140,7 @@ class AutotranslatableFallback(FallbackSkill):
             modify fallback handler for input auto-translation
         """
         if self.input_lang:
-            def new_handler(message):
+            def universal_translate_handler(message):
                 # auto_Translate input
                 ut = message.data.get("utterance")
                 if ut:
@@ -119,11 +151,14 @@ class AutotranslatableFallback(FallbackSkill):
                         self.input_lang = self.input_lang.split("-")[0]
                     if self.input_lang != ut_lang:
                         message.data["utterance"] = self.translate(ut,
-                                                              self.input_lang)
-                return handler(message)
+                                                                   self.input_lang)
+                success = handler(message)
+                if success:
+                    handler.__self__.make_active()
+                return success
 
-            self.instance_fallback_handlers.append(new_handler)
-            self._register_fallback(new_handler, priority)
+            self.instance_fallback_handlers.append(universal_translate_handler)
+            self._register_fallback(universal_translate_handler, priority
         else:
             self.instance_fallback_handlers.append(handler)
             self._register_fallback(handler, priority)
