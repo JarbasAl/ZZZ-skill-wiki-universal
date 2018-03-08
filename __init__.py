@@ -16,23 +16,27 @@ import re
 import wikipedia as wiki
 from adapt.intent import IntentBuilder
 
-from mycroft.skills.core import MycroftSkill, intent_handler
+from mycroft.skills.core import intent_handler
 from mycroft.util.log import LOG
 
+from mycroft_jarbas_utils.skills.auto_translatable import AutotranslatableSkill
 
 # Tests:  tell me about john
 
-class WikipediaSkill(MycroftSkill):
+class WikipediaSkill(AutotranslatableSkill):
     def __init__(self):
         super(WikipediaSkill, self).__init__(name="WikipediaSkill")
+        wiki.set_lang("en")
+        self.input_lang = "en-us"
+        self.translate_keys = ["ArticleTitle"]
 
-    @intent_handler(IntentBuilder("").require("Wikipedia").
+    @intent_handler(IntentBuilder("Wiki").require("Wikipedia").
                     require("ArticleTitle"))
-    def handle_intent(self, message):
+    def handle_wiki_intent(self, message):
         # Extract what the user asked about
         self._lookup(message.data.get("ArticleTitle"))
 
-    @intent_handler(IntentBuilder("").require("More").
+    @intent_handler(IntentBuilder("WikiMore").require("More").
                     require("wiki_article").require("spoken_lines"))
     def handle_tell_more(self, message):
         # Read more of the last article queried
@@ -55,10 +59,6 @@ class WikipediaSkill(MycroftSkill):
 
     def _lookup(self, search):
         try:
-            # Use the version of Wikipedia appropriate to the request language
-            dict = self.translate_namedvalues("wikipedia_lang")
-            wiki.set_lang(dict["code"])
-
             # Talk to the user, as this can take a little time...
             self.speak_dialog("searching", {"query": search})
 
