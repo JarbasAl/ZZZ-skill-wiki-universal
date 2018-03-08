@@ -1,11 +1,15 @@
-# Auto translatable Wiki Skill
+## Wikipedia
+Search for Wikipedia articles
 
-wiki skill works with english utterances, this allows the wikipedia skill to
-translate all input in english, search wikipedia, and translate output into
-configured language
+## Description 
+Query [Wikipedia](https://www.wikipedia.org) for answers to all your questions!  Get just the
+summary, or ask for more to get in-depth information.
 
-## Usage:
-* `wiki Elon Musk`
-* `wikipedia Alan Turing`
-* `tell me about Alan Turing`
-* `what does wikipedia say about water`
+## Examples 
+* "Tell me about Elon Musk"
+* "Tell me about beans"
+* "Check wikipedia for beans"
+* "Search for water"
+
+## Credits 
+Mycroft AI
