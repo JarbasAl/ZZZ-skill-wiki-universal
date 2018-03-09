@@ -30,6 +30,12 @@ class WikipediaSkill(AutotranslatableSkill):
         self.input_lang = "en-us"
         self.translate_keys = ["ArticleTitle"]
 
+    def get_intro_message(self):
+        name = "wikipedia"
+        return "you installed universal " + name + " skill, you should " \
+               "also remove or blacklist the official " + name + \
+               " skill to avoid potential problems"
+
     @intent_handler(IntentBuilder("Wiki").require("Wikipedia").
                     require("ArticleTitle"))
     def handle_wiki_intent(self, message):
