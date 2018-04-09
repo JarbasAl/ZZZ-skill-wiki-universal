@@ -1,2 +1,2 @@
 wikipedia==1.4.0
-git+https://github.com/JarbasAl/mycroft_jarbas_utils
+mycroft_jarbas_utils
